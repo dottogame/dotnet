@@ -4,10 +4,9 @@
 #include <string>
 #include <sstream>
 
-class two_state_dotocol
+namespace tsd
 {
-public:
-    struct connection
+    static struct connection
     {
     public:
         char* id;
@@ -21,7 +20,7 @@ public:
     };
 
     spp::sparse_hash_map<char*, connection*> con_list;
-    spp::sparse_hash_map<char*, char*> ip_to_id;
+    spp::sparse_hash_map<std::string, char*> ip_to_id;
 
     void flip(connection* con)
     {
