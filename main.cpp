@@ -11,6 +11,8 @@ int main(int argc, char **argv)
     {
         // TODO: Handle error
     }
+
+    socket.setBlocking(false);
     
     return 0;
 }
