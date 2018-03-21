@@ -3,6 +3,7 @@
 
 #include "AuthKit.hpp"
 #include "TwoStateDotocol.hpp"
+#include "Config.hpp"
 
 #define PORT 46980
 #define BUFF_SIZE 128
@@ -12,11 +13,15 @@ bool running = true;
 
 sf::UdpSocket socket;
 
+config* main_config;
+
 /**
     handles incoming requests and sends responses
 */
 void process(char* data, sf::IpAddress& sender, unsigned short& port)
 {
+    main_config = new config("./config.json");
+
     // check if packet is a request
     if (data[0] == 'r')
     {
@@ -45,6 +50,7 @@ int main(int argc, char **argv)
     if (socket.bind(PORT) != sf::Socket::Done)
     {
         // TODO: Handle error
+        return 1;
     }
     
     char data[BUFF_SIZE];
@@ -52,11 +58,16 @@ int main(int argc, char **argv)
     sf::IpAddress sender;
     unsigned short port;
 
+    // loop recieving packets
     while (running)
     {
-        // lol for now we just die if an error occurs
+        // recieve message and die if an error occurs
         if (socket.receive(data, BUFF_SIZE, received, sender, port) != sf::Socket::Done) return 1;
-        if (data[0] == '-') authkit::check(data, sender, port); // TODO check auth and make connection
+
+        // if no prefix, check auth and make connection
+        if (data[0] == '-') authkit::check(data, sender, port);
+
+        // else process request
         else process(data, sender, port);
     }
 

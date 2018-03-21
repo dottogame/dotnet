@@ -6,7 +6,7 @@
 
 namespace tsd
 {
-    static struct connection
+    struct connection
     {
     public:
         char* id;
