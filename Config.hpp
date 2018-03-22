@@ -14,31 +14,32 @@
 class config
 {
 public:
-    std::string name = "Server";
+    std::string name = "LAN Play";
 
-    int type = 0;
+    bool lobbies = false;
+
+    int port = 46980;
 
     config(const char* path)
     {
-        // load file to string
-        std::ifstream t(path);
-        std::string str;
+        // check if config exists
+        if (FILE *file = fopen(path, "r")) {
+            // close the file so we can open with an ifstream
+            fclose(file);
 
-        t.seekg(0, std::ios::end);
-        str.reserve(t.tellg());
-        t.seekg(0, std::ios::beg);
+            // load file to string
+            std::ifstream t(path);
+            std::stringstream buffer;
+            buffer << t.rdbuf();
 
-        str.assign(
-            (std::istreambuf_iterator<char>(t)),
-            std::istreambuf_iterator<char>()
-        );
+            // parse json
+            rapidjson::Document d;
+            d.Parse(buffer.str().c_str());
 
-        // parse json
-        rapidjson::Document d;
-        d.Parse(str.c_str());
-
-        // instantiate config
-        if (d.FindMember("name") != d.MemberEnd()) name = d["name"].GetString();
-        if (d.FindMember("type") != d.MemberEnd()) type = d["type"].GetInt();
+            // instantiate config
+            if (d.FindMember("name") != d.MemberEnd()) name = d["name"].GetString();
+            if (d.FindMember("lobbies") != d.MemberEnd()) lobbies = d["lobbies"].GetBool();
+            if (d.FindMember("port") != d.MemberEnd()) port = d["port"].GetInt();
+        }
     }
 };

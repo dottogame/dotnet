@@ -1,62 +1,53 @@
 #include <SFML\Network.hpp>
 #include <iostream>
 
-#include "AuthKit.hpp"
-#include "TwoStateDotocol.hpp"
-#include "Config.hpp"
-
-#define PORT 46980
 #define BUFF_SIZE 128
+
+#include "AuthKit.hpp"
+#include "Config.hpp"
+#include "Endpoints.hpp"
 
 // globals
 bool running = true;
 
 sf::UdpSocket socket;
 
-config* main_config;
+config* configuration;
 
 /**
-    handles incoming requests and sends responses
+ * take request and route to correct endpoint handle
 */
-void process(char* data, sf::IpAddress& sender, unsigned short& port)
-{
-    main_config = new config("./config.json");
+void route(char* data, sf::IpAddress& sender, unsigned short& port)
+{ 
+    // pinged
+    if (data[0] == '!') endpoint::ping(sender, port, socket);
 
     // check if packet is a request
-    if (data[0] == 'r')
+    else if (data[0] == 'r')
     {
+        // request lobby count
+        if (data[1] == 'l' && data[2] == 'c') endpoint::lobby_count(sender, port, configuration);
 
+        // request lobby details
+        if (data[1] == 'l' && data[2] == 'd') endpoint::lobby_details(data, sender, port, configuration);
     }
     // client is requesting response stack
-    else
-    {
-        // the key to get an id is the ip and port concatenated
-        std::string key = sender.toString() + std::to_string(port);
-
-        // check if we have the id for this ip. ignore by returning if not
-        auto it = tsd::ip_to_id.find(key);
-        if (it == tsd::ip_to_id.end()) return;
-
-        // grab user connection and send message
-        auto con = tsd::con_list[tsd::ip_to_id[key]];
-        auto msg = tsd::fetch(con, data[0]);
-        const char* buff = msg.c_str();
-        socket.send(buff, msg.size(), sender, port);
-    }
+    else endpoint::get_stack(data, sender, port, socket);
 }
 
 int main(int argc, char **argv)
-{    
-    if (socket.bind(PORT) != sf::Socket::Done)
-    {
-        // TODO: Handle error
-        return 1;
-    }
-    
+{
+    // variables needed
     char data[BUFF_SIZE];
     std::size_t received;
     sf::IpAddress sender;
     unsigned short port;
+
+    // load config
+    configuration = new config("./config.json");
+
+    // bind to port. exit if failed.
+    if (socket.bind(configuration->port) != sf::Socket::Done) return 1;
 
     // loop recieving packets
     while (running)
@@ -67,8 +58,8 @@ int main(int argc, char **argv)
         // if no prefix, check auth and make connection
         if (data[0] == '-') authkit::check(data, sender, port);
 
-        // else process request
-        else process(data, sender, port);
+        // else handle request
+        else route(data, sender, port);
     }
 
     return 0;
