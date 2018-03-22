@@ -1,0 +1,3 @@
+[submodule "nanowww"]
+	path = nanowww
+	url = https://github.com/tokuhirom/nanowww
