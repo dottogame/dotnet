@@ -2,6 +2,9 @@
 
 #include <SFML\Network.hpp>
 
+#include "Config.hpp"
+#include "TwoStateDotocol.hpp"
+
 namespace endpoint
 {
     void ping(sf::IpAddress& sender, unsigned short& port, sf::UdpSocket& socket)

@@ -1,5 +1,4 @@
 #include <SFML\Network.hpp>
-#include <iostream>
 
 #define BUFF_SIZE 128
 
@@ -10,14 +9,10 @@
 // globals
 bool running = true;
 
-sf::UdpSocket socket;
-
-config* configuration;
-
 /**
  * take request and route to correct endpoint handle
 */
-void route(char* data, sf::IpAddress& sender, unsigned short& port)
+void route(char* data, sf::IpAddress& sender, unsigned short& port, sf::UdpSocket& socket, config* configuration)
 { 
     // pinged
     if (data[0] == '!') endpoint::ping(sender, port, socket);
@@ -31,12 +26,16 @@ void route(char* data, sf::IpAddress& sender, unsigned short& port)
         // request lobby details
         if (data[1] == 'l' && data[2] == 'd') endpoint::lobby_details(data, sender, port, configuration);
     }
+
     // client is requesting response stack
     else endpoint::get_stack(data, sender, port, socket);
 }
 
 int main(int argc, char **argv)
 {
+    sf::UdpSocket socket;
+    config* configuration;
+
     // variables needed
     char data[BUFF_SIZE];
     std::size_t received;
@@ -59,7 +58,7 @@ int main(int argc, char **argv)
         if (data[0] == '-') authkit::check(data, sender, port);
 
         // else handle request
-        else route(data, sender, port);
+        else route(data, sender, port, socket, configuration);
     }
 
     return 0;

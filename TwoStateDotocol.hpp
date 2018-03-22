@@ -1,6 +1,7 @@
 #pragma once
 
 #include "sparsepp\spp.h"
+
 #include <string>
 #include <sstream>
 

@@ -1,11 +1,8 @@
 #pragma once
 
-#include <SFML\Network.hpp>
 #include <string>
 #include <fstream>
 #include <streambuf>
-
-#include "TwoStateDotocol.hpp"
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
