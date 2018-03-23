@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     unsigned short port;
 
     // init engine & load config
-    engine eng = new engine();
+    engine* eng = new engine();
     eng->conf = new config("./config.json");
 
     // bind to port. exit if failed.
