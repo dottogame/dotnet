@@ -37,6 +37,7 @@ namespace tsd
     connection* construct(char* id)
     {
         connection* con = new connection();
+
         // init the connection and start a pack
         con->id = id;
         con->pack_state = 'x';

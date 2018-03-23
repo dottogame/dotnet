@@ -45,8 +45,8 @@ int main(int argc, char **argv)
     configuration = new config("./config.json");
 
     // bind to port. exit if failed.
-    if (socket.bind(configuration->port) != sf::Socket::Done)
-        return 1;
+    int p = configuration->port;
+    if (socket.bind(p) != sf::Socket::Done) return 1;
 
     // loop recieving packets
     while (running)
@@ -57,11 +57,11 @@ int main(int argc, char **argv)
         ) != sf::Socket::Done) return 1;
 
         // if no prefix, check auth and make connection
-        if (data[0] == '-') authkit::check(data, sender, port);
+        if (data[0] == '-') authkit::check(data, sender, port, socket);
 
         // else handle request
         else route(data, sender, port, socket, configuration);
     }
-
+    
     return 0;
 }
