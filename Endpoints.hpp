@@ -2,6 +2,7 @@
 
 #include <SFML\Network.hpp>
 
+#include "Engine.hpp"
 #include "Config.hpp"
 #include "TwoStateDotocol.hpp"
 
@@ -36,7 +37,8 @@ namespace endpoint
         if (!get_key(key, sender, port)) return;
 
         // send lobby list message: "reply lobby <lobby count>"
-        if (eng->conf->lobbies) send_to_con(key, "rl" + std::to_string(eng->lobbies.size));
+        std::string resp = "rl" + std::to_string(eng->lobbies.size());
+        if (eng->conf->lobbies) send_to_con(key, resp.c_str());
 
         // send (no lobbies) message: "reply lobby none"
         else send_to_con(key, "rl0");
@@ -118,6 +120,14 @@ namespace endpoint
     }
 
     void match_relay(
+        char* data, sf::IpAddress& sender, unsigned short& port,
+        engine* eng
+    )
+    {
+
+    }
+
+    void match_ghost_relay(
         char* data, sf::IpAddress& sender, unsigned short& port,
         engine* eng
     )

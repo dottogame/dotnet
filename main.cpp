@@ -35,6 +35,7 @@ void route(
 
         // endpoint to relay data (make calls to other clients)
         if (data[1] == 'm' && data[2] == 'r') endpoint::match_relay(data, sender, port, eng);
+        if (data[1] == 'm' && data[2] == 'g') endpoint::match_ghost_relay(data, sender, port, eng);
 
         // connection control endpoints
         if (data[1] == 'd' && data[2] == 'c') endpoint::disconnect(sender, port, eng);

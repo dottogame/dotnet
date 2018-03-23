@@ -137,6 +137,7 @@
     <ClInclude Include="AuthKit.hpp" />
     <ClInclude Include="Config.hpp" />
     <ClInclude Include="Endpoints.hpp" />
+    <ClInclude Include="Engine.hpp" />
     <ClInclude Include="Lobby.hpp" />
     <ClInclude Include="TwoStateDotocol.hpp" />
   </ItemGroup>
