@@ -20,11 +20,26 @@ void route(
     config* configuration
 )
 {
-    if (data[0] == '!') endpoint::ping(sender, port, socket);
+    if (data[0] == '!') socket.send("pong!", 5, sender, port);
     else if (data[0] == 'r')
     {
+        // lobby access endpoints
         if (data[1] == 'l' && data[2] == 'c') endpoint::lobby_count(sender, port, configuration);
-        if (data[1] == 'l' && data[2] == 'd') endpoint::lobby_details(data, sender, port, configuration);
+        if (data[1] == 'l' && data[2] == 'i') endpoint::lobby_info(data, sender, port, configuration);
+        if (data[1] == 'l' && data[2] == 'j') endpoint::lobby_join(data, sender, port, configuration);
+        if (data[1] == 'l' && data[2] == 'l') endpoint::lobby_leave(sender, port, configuration);
+
+        // lobby control endpoints
+        if (data[1] == 'l' && data[2] == 'a') endpoint::lobby_add(data, sender, port, configuration);
+        if (data[1] == 'l' && data[2] == 'r') endpoint::lobby_rename(data, sender, port, configuration);
+        if (data[1] == 'l' && data[2] == 'd') endpoint::lobby_delete(sender, port, configuration);
+        if (data[1] == 'l' && data[2] == 'o') endpoint::lobby_owner(data, sender, port, configuration);
+
+        // endpoint to relay data (make calls to other clients)
+        if (data[1] == 'm' && data[2] == 'r') endpoint::match_relay(data, sender, port, configuration);
+
+        // connection control endpoints
+        if (data[1] == 'd' && data[2] == 'c') endpoint::disconnect(sender, port, configuration);
     }
 
     else endpoint::get_stack(data, sender, port, socket);
@@ -62,6 +77,6 @@ int main(int argc, char **argv)
         // else handle request
         else route(data, sender, port, socket, configuration);
     }
-    
+
     return 0;
 }

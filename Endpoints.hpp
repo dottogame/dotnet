@@ -7,54 +7,55 @@
 
 namespace endpoint
 {
-    void ping(
-        sf::IpAddress& sender, unsigned short& port, sf::UdpSocket& socket
+    /* UTILITY FUNCTIONS*/
+    bool get_key(
+        std::string& key, sf::IpAddress& sender, unsigned short& port
     )
     {
-        socket.send("pong!", 5, sender, port);
+        // build key from id and port
+        key = sender.toString() + std::to_string(port);
+
+        // check if we have the id for this ip. ignore by returning if not
+        auto it = tsd::ip_to_id.find(key);
+        if (it == tsd::ip_to_id.end()) return false;
+        return true;
     }
 
+    void send_to_con(std::string& key, const char* msg)
+    {
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
+        tsd::pack(con, msg);
+    }
+
+    /* ENDPOINTS */
     void lobby_count(
         sf::IpAddress& sender, unsigned short& port, config* configuration
     )
     {
-        // the key to get an id is the ip and port concatenated
-        std::string key = sender.toString() + std::to_string(port);
-
-        // check if we have the id for this ip. ignore by returning if not
-        auto it = tsd::ip_to_id.find(key);
-        if (it == tsd::ip_to_id.end()) return;
-
-        // grab user connection
-        auto con = tsd::con_list[tsd::ip_to_id[key]];
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
         // send lobby list message: "reply lobby <lobby count>" 
-        if (configuration->lobbies) tsd::pack(con, "rl");
+        // TODO: complete
+        if (configuration->lobbies) send_to_con(key, "rl");
 
         // send (no lobbies) message: "reply lobby none"
-        else tsd::pack(con, "rl0");
+        else send_to_con(key, "rl0");
     }
 
-    void lobby_details(
+    void lobby_info(
         char* data, sf::IpAddress& sender, unsigned short& port,
         config* configuration
     )
     {
-        // the key to get an id is the ip and port concatenated
-        std::string key = sender.toString() + std::to_string(port);
-
-        // check if we have the id for this ip. ignore by returning if not
-        auto it = tsd::ip_to_id.find(key);
-        if (it == tsd::ip_to_id.end()) return;
-
-        // grab user connection
-        auto con = tsd::con_list[tsd::ip_to_id[key]];
-
+        std::string key;
+        if (!get_key(key, sender, port)) return;
+        
         // send lobby list message: "reply lobby details: [lobby details]" 
-        if (configuration->lobbies) tsd::pack(con, "rld:" + 0);
+        if (configuration->lobbies) send_to_con(key, "rld:" + 0);
 
         // send (no lobbies) message: "reply lobby error: <error>"
-        else tsd::pack(con, "rle:this server has no lobbies");
+        else send_to_con(key, "rle:this server has no lobbies");
     }
 
     void get_stack(
@@ -62,17 +63,74 @@ namespace endpoint
         sf::UdpSocket& socket
     )
     {
-        // the key to get an id is the ip and port concatenated
-        std::string key = sender.toString() + std::to_string(port);
-
-        // check if we have the id for this ip. ignore by returning if not
-        auto it = tsd::ip_to_id.find(key);
-        if (it == tsd::ip_to_id.end()) return;
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
         // grab user connection and send message
         auto con = tsd::con_list[tsd::ip_to_id[key]];
         std::string msg = tsd::fetch(con, data[0]);
         const char* buff = msg.c_str();
         socket.send(buff, msg.size(), sender, port);
+    }
+
+    void lobby_join(
+        char* data, sf::IpAddress& sender, unsigned short& port,
+        config* configuration
+    )
+    {
+
+    }
+
+    void lobby_leave(
+        sf::IpAddress& sender, unsigned short& port, config* configuration
+    )
+    {
+
+    }
+
+    void lobby_add(
+        char* data, sf::IpAddress& sender, unsigned short& port,
+        config* configuration
+    )
+    {
+
+    }
+
+    void lobby_rename(
+        char* data, sf::IpAddress& sender, unsigned short& port,
+        config* configuration
+    )
+    {
+
+    }
+
+    void lobby_delete(
+        sf::IpAddress& sender, unsigned short& port, config* configuration
+    )
+    {
+
+    }
+
+    void lobby_owner(
+        char* data, sf::IpAddress& sender, unsigned short& port,
+        config* configuration
+    )
+    {
+
+    }
+
+    void match_relay(
+        char* data, sf::IpAddress& sender, unsigned short& port,
+        config* configuration
+    )
+    {
+
+    }
+
+    void disconnect(
+        sf::IpAddress& sender, unsigned short& port, config* configuration
+    )
+    {
+
     }
 }
