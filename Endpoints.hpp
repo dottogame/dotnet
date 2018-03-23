@@ -84,8 +84,14 @@ namespace endpoint
         
         auto con = tsd::con_list[tsd::ip_to_id[key]];
 
-        con->lob = new lobby(key);
-        eng->lobbies.push_back(con->lob);
+        con->lob = eng->lobbies[(int) data[3]];
+        eng->lobbies[(int)data[3]]->players.push_back(key);
+
+        // inform all of join
+        std::string msg = "elj/" + key;
+        for (auto const& key : eng->lobbies[(int)data[3]]->players)
+            tsd::pack(tsd::con_list[tsd::ip_to_id[key]], msg);
+
         tsd::pack(con, "rlj/ok");
     }
 
@@ -98,15 +104,21 @@ namespace endpoint
 
         auto con = tsd::con_list[tsd::ip_to_id[key]];
         
-        // find in lobby and remove
+        // inform all of leave
+        std::string msg = "ell/";
+        msg += con->id;
+        for (auto const& key : con->lob->players)
+            tsd::pack(tsd::con_list[tsd::ip_to_id[key]], msg);
+
+        // find player in lobby and remove
         auto it = std::find(
-            std::begin(eng->lobbies),
-            std::end(eng->lobbies),
-            con->lob
+            std::begin(con->lob->players),
+            std::end(con->lob->players),
+            key
         );
 
-        if (it != std::end(eng->lobbies))
-            eng->lobbies.erase(it);
+        if (it != std::end(con->lob->players))
+            con->lob->players.erase(it);
 
         // delete pointer
         con->lob = NULL;
@@ -119,7 +131,14 @@ namespace endpoint
         engine* eng
     )
     {
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
+
+        con->lob = new lobby(key);
+        eng->lobbies.push_back(con->lob);
+        tsd::pack(con, "rlj/ok");
     }
 
     void lobby_rename(
@@ -127,14 +146,56 @@ namespace endpoint
         engine* eng
     )
     {
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
+
+        // get name
+        std::string dat(data);
+        std::string msg = "elr/" + dat.substr(3);
+
+        // inform all of rename
+        for (auto const& key : con->lob->players)
+            tsd::pack(tsd::con_list[tsd::ip_to_id[key]], msg);
+
+        tsd::pack(con, "rlr/ok");
     }
 
     void lobby_delete(
         sf::IpAddress& sender, unsigned short& port, engine* eng
     )
     {
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
+
+        // delete lobby instance
+        auto it = std::find(
+            std::begin(eng->lobbies),
+            std::end(eng->lobbies),
+            con->lob
+        );
+
+        if (it != std::end(eng->lobbies))
+            eng->lobbies.erase(it);
+
+        // remove lobby pointer
+        con->lob = NULL;
+
+        // inform all of deletion
+        std::string msg = "eld";
+        for (auto const& key : con->lob->players)
+        {
+            auto conn = tsd::con_list[tsd::ip_to_id[key]];
+            tsd::pack(conn, msg);
+
+            // delete their lobby instance
+            conn->lob = NULL;
+        }
+
+        tsd::pack(con, "rld/ok");
     }
 
     void lobby_owner(
