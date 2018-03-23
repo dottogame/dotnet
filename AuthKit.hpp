@@ -29,7 +29,6 @@ namespace authkit {
         path += "/";
         path += token;
 
-        std::cout << path << std::endl;
         // make request
         http.setHost("http://dotto.mcfish.space");
         sf::Http::Request request;
