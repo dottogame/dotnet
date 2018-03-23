@@ -5,6 +5,8 @@
 #include <string>
 #include <sstream>
 
+#include "Lobby.hpp"
+
 namespace tsd
 {
     struct connection
@@ -18,6 +20,8 @@ namespace tsd
 
         std::string prev_packs;
         std::string party_id;
+
+        lobby* lob;
     };
 
     spp::sparse_hash_map<char*, connection*> con_list;

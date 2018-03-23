@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML\Network.hpp>
+#include <algorithm>
 
 #include "Engine.hpp"
 #include "Config.hpp"
@@ -55,7 +56,7 @@ namespace endpoint
         if (eng->conf->lobbies) send_to_con(key, "rld:" + 0);
 
         // send (no lobbies) message: "reply lobby error: <error>"
-        else send_to_con(key, "rle:this server has no lobbies");
+        else send_to_con(key, "rle/this server has no lobbies");
     }
 
     void get_stack(
@@ -78,14 +79,39 @@ namespace endpoint
         engine* eng
     )
     {
+        std::string key;
+        if (!get_key(key, sender, port)) return;
+        
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
 
+        con->lob = new lobby(key);
+        eng->lobbies.push_back(con->lob);
+        tsd::pack(con, "rlj/ok");
     }
 
     void lobby_leave(
         sf::IpAddress& sender, unsigned short& port, engine* eng
     )
     {
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
+        
+        // find in lobby and remove
+        auto it = std::find(
+            std::begin(eng->lobbies),
+            std::end(eng->lobbies),
+            con->lob
+        );
+
+        if (it != std::end(eng->lobbies))
+            eng->lobbies.erase(it);
+
+        // delete pointer
+        con->lob = NULL;
+
+        tsd::pack(con, "rll/ok");
     }
 
     void lobby_add(

@@ -1,10 +1,17 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
-struct lobby
+class lobby
 {
 public:
     std::string name = "LAN Play";
+    
+    std::vector<std::string> players;
 
+    lobby(std::string creator_key)
+    {
+        players.push_back(creator_key);
+    }
 };

@@ -5,7 +5,8 @@
 #include "Lobby.hpp"
 #include "Config.hpp"
 
-class engine {
+class engine
+{
 public:
     bool running = true;
 
