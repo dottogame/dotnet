@@ -29,30 +29,28 @@ namespace endpoint
 
     /* ENDPOINTS */
     void lobby_count(
-        sf::IpAddress& sender, unsigned short& port, config* configuration
+        sf::IpAddress& sender, unsigned short& port, engine* eng
     )
     {
         std::string key;
         if (!get_key(key, sender, port)) return;
 
-        // send lobby list message: "reply lobby <lobby count>" 
-        // TODO: complete
-        if (configuration->lobbies) send_to_con(key, "rl");
+        // send lobby list message: "reply lobby <lobby count>"
+        if (eng->conf->lobbies) send_to_con(key, "rl" + std::to_string(eng->lobbies.size));
 
         // send (no lobbies) message: "reply lobby none"
         else send_to_con(key, "rl0");
     }
 
     void lobby_info(
-        char* data, sf::IpAddress& sender, unsigned short& port,
-        config* configuration
+        char* data, sf::IpAddress& sender, unsigned short& port, engine* eng
     )
     {
         std::string key;
         if (!get_key(key, sender, port)) return;
         
         // send lobby list message: "reply lobby details: [lobby details]" 
-        if (configuration->lobbies) send_to_con(key, "rld:" + 0);
+        if (eng->conf->lobbies) send_to_con(key, "rld:" + 0);
 
         // send (no lobbies) message: "reply lobby error: <error>"
         else send_to_con(key, "rle:this server has no lobbies");
@@ -75,14 +73,14 @@ namespace endpoint
 
     void lobby_join(
         char* data, sf::IpAddress& sender, unsigned short& port,
-        config* configuration
+        engine* eng
     )
     {
 
     }
 
     void lobby_leave(
-        sf::IpAddress& sender, unsigned short& port, config* configuration
+        sf::IpAddress& sender, unsigned short& port, engine* eng
     )
     {
 
@@ -90,7 +88,7 @@ namespace endpoint
 
     void lobby_add(
         char* data, sf::IpAddress& sender, unsigned short& port,
-        config* configuration
+        engine* eng
     )
     {
 
@@ -98,14 +96,14 @@ namespace endpoint
 
     void lobby_rename(
         char* data, sf::IpAddress& sender, unsigned short& port,
-        config* configuration
+        engine* eng
     )
     {
 
     }
 
     void lobby_delete(
-        sf::IpAddress& sender, unsigned short& port, config* configuration
+        sf::IpAddress& sender, unsigned short& port, engine* eng
     )
     {
 
@@ -113,7 +111,7 @@ namespace endpoint
 
     void lobby_owner(
         char* data, sf::IpAddress& sender, unsigned short& port,
-        config* configuration
+        engine* eng
     )
     {
 
@@ -121,14 +119,14 @@ namespace endpoint
 
     void match_relay(
         char* data, sf::IpAddress& sender, unsigned short& port,
-        config* configuration
+        engine* eng
     )
     {
 
     }
 
     void disconnect(
-        sf::IpAddress& sender, unsigned short& port, config* configuration
+        sf::IpAddress& sender, unsigned short& port, engine* eng
     )
     {
 
