@@ -45,15 +45,8 @@ namespace authkit {
         if (status == "ok")
         {
             tsd::construct(id);
-            std::string msg = "-ok";
-            const char* buff = msg.c_str();
-            socket.send(buff, msg.size(), sender, port);
+            socket.send("-ok", 3, sender, port);
         }
-        else
-        {
-            std::string msg = "-foul";
-            const char* buff = msg.c_str();
-            socket.send(buff, msg.size(), sender, port);
-        }
+        else socket.send("-foul", 5, sender, port);
     }
 }
