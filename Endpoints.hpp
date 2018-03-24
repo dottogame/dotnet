@@ -156,8 +156,8 @@ namespace endpoint
         std::string msg = "elr/" + dat.substr(3);
 
         // inform all of rename
-        for (auto const& key : con->lob->players)
-            tsd::pack(tsd::con_list[tsd::ip_to_id[key]], msg);
+        for (auto const& keyz : con->lob->players)
+            tsd::pack(tsd::con_list[tsd::ip_to_id[keyz]], msg);
 
         tsd::pack(con, "rlr/ok");
     }
@@ -186,9 +186,9 @@ namespace endpoint
 
         // inform all of deletion
         std::string msg = "eld";
-        for (auto const& key : con->lob->players)
+        for (auto const& keyz : con->lob->players)
         {
-            auto conn = tsd::con_list[tsd::ip_to_id[key]];
+            auto conn = tsd::con_list[tsd::ip_to_id[keyz]];
             tsd::pack(conn, msg);
 
             // delete their lobby instance
@@ -203,7 +203,19 @@ namespace endpoint
         engine* eng
     )
     {
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
+
+        // set new owner
+        con->lob->owner = key;
+
+        // inform all of new owner
+        for (auto const& keyz : con->lob->players)
+            tsd::pack(tsd::con_list[tsd::ip_to_id[keyz]], "elo/" + key);
+
+        tsd::pack(con, "rlo/ok");
     }
 
     void match_relay(
@@ -211,7 +223,18 @@ namespace endpoint
         engine* eng
     )
     {
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
+        
+        std::string dat(data);
+
+        // inform all of new owner
+        for (auto const& keyz : con->lob->players)
+            tsd::pack(tsd::con_list[tsd::ip_to_id[keyz]], "elr/" + dat.substr(3));
+
+        tsd::pack(con, "rlo/ok");
     }
 
     void match_ghost_relay(
@@ -219,13 +242,23 @@ namespace endpoint
         engine* eng
     )
     {
+        std::string key;
+        if (!get_key(key, sender, port)) return;
 
+        auto con = tsd::con_list[tsd::ip_to_id[key]];
+
+        std::string dat(data);
+        std::string msg = "elg/" + dat.substr(3);
+
+        // relay to all
+        for (auto keyz : con->lob->players)
+            send_to_con(keyz, msg.c_str());
     }
 
     void disconnect(
         sf::IpAddress& sender, unsigned short& port, engine* eng
     )
     {
-
+        lobby_leave(sender, port, eng);
     }
 }
