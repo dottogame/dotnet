@@ -1,3 +1,6 @@
 [submodule "nanowww"]
 	path = nanowww
 	url = https://github.com/tokuhirom/nanowww
+[submodule "include/leapsocket"]
+	path = include/leapsocket
+	url = https://bitbucket.org/Lite20/leapsocket
