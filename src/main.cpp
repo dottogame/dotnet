@@ -1,5 +1,7 @@
 #define BUFF_SIZE 128
 
+#include <iostream>
+
 #include "leapsocket/leapwin.hpp"
 
 #include "AuthKit.hpp"
@@ -61,13 +63,14 @@ void pack_handle()
 
 void err_handle(int err_code)
 {
+    std::cout << "err" << std::endl;
     exit(err_code);
 }
 
-int main()
+int main(int argc, char* argv[])
 {
     // load config
-    conf = new config("./config.json");
+    conf = new config("config.json");
 
     // create udp socket
     leap = new leapwin(8888, pack_handle, err_handle);

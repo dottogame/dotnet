@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <string>
 #include <fstream>
 #include <streambuf>
@@ -37,6 +38,11 @@ public:
             if (d.FindMember("name") != d.MemberEnd()) name = d["name"].GetString();
             if (d.FindMember("lobbies") != d.MemberEnd()) lobbies = d["lobbies"].GetBool();
             if (d.FindMember("port") != d.MemberEnd()) port = d["port"].GetInt();
+        }
+        else
+        {
+            std::cout << "no config.json found! Please execute from the same directory as the config.json" << std::endl;
+            exit(1);
         }
     }
 };

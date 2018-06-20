@@ -1,6 +1,6 @@
 #pragma once
 
-#include<winsock2.h>
+#include <winsock2.h>
 #include <string>
 #include <sstream>
 
