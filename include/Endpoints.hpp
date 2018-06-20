@@ -29,7 +29,7 @@ namespace endpoint
         else tsd::pack(con, "rle/this server has no lobbies");
     }
 
-    void lobby_join(int lobby_id, connection* con)                                                             )
+    void lobby_join(connection* con, int lobby_id)                                                             )
     {
         // add player to lobby (notifies others)
         lobbies::[lobby_id]->add(con->id);
@@ -56,7 +56,7 @@ namespace endpoint
         tsd::pack(con, "rlj/ok");
     }
 
-    void lobby_rename(char* data, connection* con)
+    void lobby_rename(connection* con, char* data)
     {
         if (lobbies::lobby_map.find(con->id) != lobbies::lobby_map.end())
         {
@@ -107,7 +107,7 @@ namespace endpoint
         tsd::pack(con, "rld/ok");
     }
 
-    void lobby_owner(char* data, connection* con)
+    void lobby_owner(connection* con, char* data)
     {
         if (lobbies::lobby_map.find(con->id) == lobbies::lobby_map.end())
         {
@@ -142,7 +142,7 @@ namespace endpoint
         tsd::pack(con, "rlo/ok");
     }
 
-    void match_relay(char* data, connection* con)
+    void match_relay(connection* con, char* data)
     {
         if (lobbies::lobby_map.find(con->id) == lobbies::lobby_map.end())
         {
@@ -155,19 +155,19 @@ namespace endpoint
 
         lobby* lob = lobbies::lobby_map[con->id];
 
-        // inform all of new owner
+        // relay message
         for (auto const& player_con_id : lob->players)
             tsd::pack(tsd::con_list[player_con_id], msg);
 
         tsd::pack(con, "rlo/ok");
     }
 
-    void match_ghost_relay(char* data, connection* con)
+    void match_ghost_relay(connection* con, char* data)
     {
         if (lobbies::lobby_map.find(con->id) == lobbies::lobby_map.end()) return;
 
         std::string dat(data);
-        std::string msg = "g/" + dat.substr(3);
+        std::string msg = "vgr/" + dat.substr(3);
 
         lobby* lob = lobbies::lobby_map[con->id];
 

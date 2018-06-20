@@ -36,18 +36,18 @@ void pack_handle()
             // lobby access endpoints
             if (leap->buf[1] == 'l' && leap->buf[2] == 'c') endpoint::lobby_count(con);
             if (leap->buf[1] == 'l' && leap->buf[2] == 'i') endpoint::lobby_info(con, conf);
-            if (leap->buf[1] == 'l' && leap->buf[2] == 'j') endpoint::lobby_join((int) leap->buf[3], con);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'j') endpoint::lobby_join(con, (int) leap->buf[3]);
             if (leap->buf[1] == 'l' && leap->buf[2] == 'l') endpoint::lobby_leave(con);
 
             // lobby control endpoints
             if (leap->buf[1] == 'l' && leap->buf[2] == 'a') endpoint::lobby_add(con, conf);
-            if (leap->buf[1] == 'l' && leap->buf[2] == 'r') endpoint::lobby_rename(data, con);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'r') endpoint::lobby_rename(con, data);
             if (leap->buf[1] == 'l' && leap->buf[2] == 'd') endpoint::lobby_delete(con, conf);
-            if (leap->buf[1] == 'l' && leap->buf[2] == 'o') endpoint::lobby_owner(data, con);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'o') endpoint::lobby_owner(con, data);
 
             // endpoint to relay data (make calls to other clients)
-            if (leap->buf[1] == 'm' && leap->buf[2] == 'r') endpoint::match_relay(data, con);
-            if (leap->buf[1] == 'm' && leap->buf[2] == 'g') endpoint::match_ghost_relay(data, con);
+            if (leap->buf[1] == 'm' && leap->buf[2] == 'r') endpoint::match_relay(con, data);
+            if (leap->buf[1] == 'm' && leap->buf[2] == 'g') endpoint::match_ghost_relay(con, data);
 
             // connection control endpoints
             if (leap->buf[1] == 'd' && leap->buf[2] == 'c') endpoint::disconnect(con, conf);
