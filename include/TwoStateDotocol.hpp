@@ -5,27 +5,22 @@
 #include <string>
 #include <sstream>
 
-#include "Lobby.hpp"
-
 namespace tsd
 {
     struct connection
     {
     public:
-        char* id;
-
         char pack_state;
 
         std::stringstream curr_packs;
 
-        std::string prev_packs;
-        std::string party_id;
-
-        lobby* lob;
+        std::string ip;
+        std::string id;
+        std::string packed;
     };
 
-    spp::sparse_hash_map<char*, connection*> con_list;
-    spp::sparse_hash_map<std::string, char*> ip_to_id;
+    spp::sparse_hash_map<std::string, connection*> con_list;
+    spp::sparse_hash_map<std::string, std::string> ip_to_id;
 
     void flip(connection* con)
     {
@@ -38,13 +33,13 @@ namespace tsd
         con->curr_packs << msg << ";";
     }
 
-    connection* construct(char* id)
+    connection* construct(std::string id, sockaddr_in* client)
     {
         connection* con = new connection();
+        std::string ip(inet_ntoa(client->sin_addr));
 
-        // init the connection and start a pack
-        con->id = id;
         con->pack_state = 'x';
+        con->ip = ip;
         con->curr_packs << con->pack_state;
 
         // add a "auth accepted message to the pack"
@@ -52,7 +47,7 @@ namespace tsd
         con->curr_packs << ":raa";
 
         con_list.insert(std::make_pair(id, con));
-        // TODO store in IP list
+        ip_to_id.insert(std::make_pair(ip, id));
         return con;
     }
 
@@ -62,7 +57,7 @@ namespace tsd
         if (pack_state == con->pack_state)
         {
             // serialize current packs and store 'em
-            con->prev_packs = con->curr_packs.str();
+            con->packed = con->curr_packs.str();
 
             // flip states
             flip(con);
@@ -72,8 +67,7 @@ namespace tsd
             con->curr_packs << con->pack_state;
         }
 
-        // if we requested new stuff, they'd be in prev_packs now
-        return con->prev_packs;
+        // requested old stuff
+        return con->packed;
     }
-};
-
+}

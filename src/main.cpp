@@ -1,5 +1,3 @@
-#include <SFML\Network.hpp>
-
 #define BUFF_SIZE 128
 
 #include "AuthKit.hpp"
@@ -7,75 +5,77 @@
 #include "Endpoints.hpp"
 #include "Engine.hpp"
 
+leapwin* leap;
+config* conf;
+
+bool running = true;
+
 /**
  * take request and route to correct endpoint handle
 */
-void route(
-    char* data,
-    sf::IpAddress& sender,
-    unsigned short& port,
-    sf::UdpSocket& socket,
-    engine* eng
-)
+void pack_handle()
 {
-    if (data[0] == '!') socket.send("pong!", 5, sender, port);
-    else if (data[0] == 'r')
+    if (leap->buf[0] == '!') leap->send("pong!", con);
+    else if (leap->buf[0] == '-') authkit::check(data, con);
+    else
     {
-        // lobby access endpoints
-        if (data[1] == 'l' && data[2] == 'c') endpoint::lobby_count(sender, port, eng);
-        if (data[1] == 'l' && data[2] == 'i') endpoint::lobby_info(data, sender, port, eng);
-        if (data[1] == 'l' && data[2] == 'j') endpoint::lobby_join(data, sender, port, eng);
-        if (data[1] == 'l' && data[2] == 'l') endpoint::lobby_leave(sender, port, eng);
+        // get ip
+        std::string ip(inet_ntoa(con->sin_addr));
 
-        // lobby control endpoints
-        if (data[1] == 'l' && data[2] == 'a') endpoint::lobby_add(data, sender, port, eng);
-        if (data[1] == 'l' && data[2] == 'r') endpoint::lobby_rename(data, sender, port, eng);
-        if (data[1] == 'l' && data[2] == 'd') endpoint::lobby_delete(sender, port, eng);
-        if (data[1] == 'l' && data[2] == 'o') endpoint::lobby_owner(data, sender, port, eng);
+        // get connection
+        tsd::connection* con;
+        if (tsd::ip_to_id.find(ip) != tsd::ip_to_id.end())
+            con = tsd::con_list[ip];
 
-        // endpoint to relay data (make calls to other clients)
-        if (data[1] == 'm' && data[2] == 'r') endpoint::match_relay(data, sender, port, eng);
-        if (data[1] == 'm' && data[2] == 'g') endpoint::match_ghost_relay(data, sender, port, eng);
+        // ignore if no connection found
+        else return;
 
-        // connection control endpoints
-        if (data[1] == 'd' && data[2] == 'c') endpoint::disconnect(sender, port, eng);
+        // handle call with correct endpoint
+        if (leap->buf[0] == 'r')
+        {
+            // lobby access endpoints
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'c') endpoint::lobby_count(con);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'i') endpoint::lobby_info(con, conf);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'j') endpoint::lobby_join((int) leap->buf[3], con);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'l') endpoint::lobby_leave(con);
+
+            // lobby control endpoints
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'a') endpoint::lobby_add(con, conf);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'r') endpoint::lobby_rename(data, con);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'd') endpoint::lobby_delete(con, conf);
+            if (leap->buf[1] == 'l' && leap->buf[2] == 'o') endpoint::lobby_owner(data, con);
+
+            // endpoint to relay data (make calls to other clients)
+            if (leap->buf[1] == 'm' && leap->buf[2] == 'r') endpoint::match_relay(data, con);
+            if (leap->buf[1] == 'm' && leap->buf[2] == 'g') endpoint::match_ghost_relay(data, con);
+
+            // connection control endpoints
+            if (leap->buf[1] == 'd' && leap->buf[2] == 'c') endpoint::disconnect(con, conf);
+        }
+
+        else leap->send(tsd::fetch(con, leap->buf[0]), con));
     }
+}
 
-    else endpoint::get_stack(data, sender, port, socket);
+
+void err_handle(int err_code)
+{
+    exit(err_code);
 }
 
 int main(int argc, char **argv)
 {
-    sf::UdpSocket socket;
+    // load config
+    conf = new config("./config.json");
 
-    // variables needed
-    char data[BUFF_SIZE];
-    std::size_t received;
-    sf::IpAddress sender;
-    unsigned short port;
+    // create udp socket
+    leap = new leapwin(8888, pack_handle, err_handle);
 
-    // init engine & load config
-    engine* eng = new engine();
-    eng->conf = new config("./config.json");
+    // loop handling incoming messages
+    while (running) leap->fetch();
 
-    // bind to port. exit if failed.
-    int p = eng->conf->port;
-    if (socket.bind(p) != sf::Socket::Done) return 1;
-
-    // loop recieving packets
-    while (eng->running)
-    {
-        // recieve message and die if an error occurs
-        if (socket.receive(
-            data, BUFF_SIZE, received, sender, port
-        ) != sf::Socket::Done) return 1;
-
-        // if no prefix, check auth and make connection
-        if (data[0] == '-') authkit::check(data, sender, port, socket);
-
-        // else handle request
-        else route(data, sender, port, socket, eng);
-    }
-
+    // close and terminate
+    leap->close();
+    lobbies::lobby_map.clear();
     return 0;
 }

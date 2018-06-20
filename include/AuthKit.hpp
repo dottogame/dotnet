@@ -11,7 +11,7 @@
 
 namespace authkit {
     sf::Http http;
-    void check(char* data, sf::IpAddress& sender, unsigned short& port, sf::UdpSocket& socket)
+    void check(char* data, &sockaddr_in target)
     {
         // extract id and token from data
         char id[37];
@@ -44,9 +44,10 @@ namespace authkit {
 
         if (status == "ok")
         {
-            tsd::construct(id);
-            socket.send("-ok", 3, sender, port);
+            tsd::construct(id, &target);
+            leap->send("-ok", target);
         }
-        else socket.send("-foul", 5, sender, port);
+
+        else leap->send("-foul", target);
     }
 }
