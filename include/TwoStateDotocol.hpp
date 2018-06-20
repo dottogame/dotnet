@@ -1,9 +1,10 @@
 #pragma once
 
-#include "sparsepp\spp.h"
-
+#include<winsock2.h>
 #include <string>
 #include <sstream>
+
+#include "sparsepp\spp.h"
 
 namespace tsd
 {

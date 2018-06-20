@@ -8,10 +8,11 @@
 #include "rapidjson/stringbuffer.h"
 
 #include "TwoStateDotocol.hpp"
+#include "leapsocket/leapwin.hpp"
 
 namespace authkit {
     sf::Http http;
-    void check(char* data, &sockaddr_in target)
+    void check(char* data, sockaddr_in& target, leapwin* leap)
     {
         // extract id and token from data
         char id[37];
